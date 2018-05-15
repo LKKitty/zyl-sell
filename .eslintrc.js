@@ -31,6 +31,6 @@ module.exports = {
     //缩进为0
     'indent': 0,
     'space-before-function-paren': 0,
-    
+    'quotes': 0,
   }
 }
