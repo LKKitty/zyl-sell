@@ -1,17 +1,17 @@
 <template>
   <div class="goods">
-      <div class="menu-wrapper">
+      <div class="menu-wrapper"  ref="menuWrapper">
         <ul>
-          <li v-for="item in goods" :key="item.id" class="menu-item">
+          <li v-for="item in goods" :key="item.id" class="menu-item" >
               <span class="text border-1px">
                 <span v-show="item.type>0" class="icon" :class="classMap[item.type]"></span>{{item.name}}
               </span>
           </li>
         </ul>
       </div>
-      <div class="foods-wrapper">
+      <div class="foods-wrapper"  ref="foodsWrapper">
         <ul>
-          <li v-for="item in goods" :key="item.id" class="food-list">
+          <li v-for="item in goods" :key="item.id" class="food-list food-list-hook" >
             <h1 class="title">{{item.name}}</h1>
             <ul>
               <li v-for="food in item.foods" :key="food.id" class="food-item border-1px">
@@ -39,6 +39,7 @@
 </template>
 
 <script type="text/ecmascript-6">
+import BScroll from 'better-scroll';
 const ERR_OK = 0;
 export default {
   name: "goods",
@@ -49,10 +50,22 @@ export default {
   },
   data() {
     return {
-      goods: []
+      goods: [],
+      listHeight: [],
+      scrollY: 0
     };
   },
-  components: {},
+  computed: {
+    currentIndex() {
+      for(let i=0;i<this.listHeight.length;i++){
+        let height1 = this.listHeight[i];
+        let height2 = this.listHeight[i+1];
+        if (!height2 || (this.scrollY > height && this.scrollY <height2)) {
+          return i;
+        }
+      }
+    }
+  },
   created() {
     this.classMap = ["decrease", "discount", "guarantee", "invoice", "special"];
     this.$_http
@@ -62,12 +75,41 @@ export default {
         console.log(response);
         if (response.errno === ERR_OK) {
           this.goods = response.data;
-          console.log(this.goods);
+          // console.log(this.goods);
+         this.$nextTick(() => {
+          this._initScroll();
+          this._calculateHeight();
+        });
         }
       })
       .catch(error => {
         console.log(error);
       });
+  },
+  methods: {
+    _initScroll () {
+      this.meunScroll = new BScroll(this.$refs.menuWrapper, {
+        click: true
+      });
+
+      this.foodsScroll = new BScroll(this.$refs.foodsWrapper, {
+        click: true,
+        probeType:3
+      });
+      this.foodsScroll.on('scroll',(pos) => {
+        this.scrollY = Math.abs(Math.round(pos.y));
+      })
+    },
+    _calculateHeight () {
+      let foodList = this.$refs.foodsWrapper.getElementByClassName('food-list-hook');
+      let height = 0;
+      this.listHeight.push(height);
+      for (let i = 0;i<foodList.length;i++){
+        let item = foodList[i];
+        height += item.clientHeight;
+        this.listHeight.push(height);
+      }
+    }
   }
 };
 </script>
@@ -90,7 +132,7 @@ export default {
 
     .menu-item {
       display: table;
-      height: 108px;
+      height: 158px;
       width: 112px;
       line-height: 36px;
       padding: 0 24px;
@@ -176,11 +218,10 @@ export default {
           }
         .desc{
           margin-bottom 16px
+          line-height 34px
           }
-        .extra{
-          &.count{
-            margin-right 24px
-            }
+        .count{
+          margin-right 24px
           }
         .price{
           font-weight 700
