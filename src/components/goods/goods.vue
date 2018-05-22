@@ -11,7 +11,7 @@
       </div>
       <div class="foods-wrapper"  ref="foodsWrapper">
         <ul>
-          <li v-for="item in goods" :key="item.id" class="food-list food-list-hook" >
+          <li v-for="item in goods" :key="item.id" class="food-list food-list-hook" :class="{'current':currentIndex===$index}">
             <h1 class="title">{{item.name}}</h1>
             <ul>
               <li v-for="food in item.foods" :key="food.id" class="food-item border-1px">
@@ -101,7 +101,7 @@ export default {
       })
     },
     _calculateHeight () {
-      let foodList = this.$refs.foodsWrapper.getElementByClassName('food-list-hook');
+      let foodList = this.$refs.foodsWrapper.getElementsByClassName('food-list-hook');
       let height = 0;
       this.listHeight.push(height);
       for (let i = 0;i<foodList.length;i++){
